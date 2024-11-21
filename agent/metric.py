@@ -19,8 +19,8 @@ class NetworkSpeedMonitor:
         
         time_elapsed = current_time - self.prev_time
         
-        upload_speed = (current_bytes_sent - self.prev_bytes_sent) / time_elapsed / (1024 )  # KB/s
-        download_speed = (current_bytes_recv - self.prev_bytes_recv) / time_elapsed / (1024 )  # KB/s
+        upload_speed = (current_bytes_sent - self.prev_bytes_sent) / (time_elapsed + 0.00001) / (1024 )  # KB/s
+        download_speed = (current_bytes_recv - self.prev_bytes_recv) / (time_elapsed + 0.0001) / (1024 )  # KB/s
         
         self.prev_bytes_sent = current_bytes_sent
         self.prev_bytes_recv = current_bytes_recv
