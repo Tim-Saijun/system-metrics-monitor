@@ -1,102 +1,116 @@
 {
-    "dashboard": {
-      "title": "系统监控仪表板",
-      "panels": [
-        {
-          "title": "CPU使用率",
-          "type": "graph",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 0
+  "dashboard": {
+    "title": "系统监控仪表板",
+    "panels": [
+      {
+        "title": "CPU 使用率",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [{
+          "datasource": "SystemMetricsAPI",
+          "url": "/api/system_metrics",
+          "jsonPath": "$.[*]",
+          "timeField": "timestamp",
+          "fields": [
+            {"name": "cpu_percent", "jsonPath": "$.cpu_percent", "type": "number"}
+          ],
+          "groupBy": "device_name"
+        }]
+      },
+      {
+        "title": "内存使用率",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "options": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 70, "color": "yellow"},
+              {"value": 85, "color": "red"}
+            ]
           }
         },
-        {
-          "title": "内存使用情况",
-          "type": "graph",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 0
-          },
-          "targets": [
-            {
-              "expr": "memory_avg",
-              "legendFormat": "内存使用率"
-            },
-            {
-              "expr": "swap_avg",
-              "legendFormat": "交换区使用率"
-            }
+        "targets": [{
+          "datasource": "SystemMetricsAPI",
+          "url": "/api/system_metrics",
+          "jsonPath": "$.[*]",
+          "fields": [
+            {"name": "memory_percent", "jsonPath": "$.memory_percent", "type": "number"}
+          ],
+          "instant": true
+        }]
+      },
+      {
+        "title": "GPU 负载",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [{
+          "datasource": "SystemMetricsAPI",
+          "url": "/api/gpu_metrics",
+          "jsonPath": "$.[*]",
+          "timeField": "timestamp",
+          "fields": [
+            {"name": "gpu_load", "jsonPath": "$.gpu_load", "type": "number"}
+          ],
+          "groupBy": "device_name",
+          "filters": [
+            {"field": "gpu_index", "operator": "=", "value": 0}
           ]
-        },
-        {
-          "title": "网络速度",
-          "type": "graph",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 8
-          },
-          "targets": [
-            {
-              "expr": "upload_speed_avg",
-              "legendFormat": "上传速度 (MB/s)"
-            },
-            {
-              "expr": "download_speed_avg",
-              "legendFormat": "下载速度 (MB/s)"
-            }
-          ]
-        },
-        {
-          "title": "磁盘使用率",
-          "type": "gauge",
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 12,
-            "y": 8
+        }]
+      },
+      {
+        "title": "GPU 温度",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8},
+        "options": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 70, "color": "yellow"},
+              {"value": 85, "color": "red"}
+            ]
           }
         },
+        "targets": [{
+          "datasource": "SystemMetricsAPI",
+          "url": "/api/gpu_metrics",
+          "jsonPath": "$.[*]",
+          "fields": [
+            {"name": "gpu_temperature", "jsonPath": "$.gpu_temperature", "type": "number"}
+          ],
+          "instant": true
+        }]
+      }
+    ],
+    "templating": {
+      "list": [
         {
-          "title": "GPU状态",
-          "type": "stat",
-          "gridPos": {
-            "h": 8,
-            "w": 4,
-            "x": 20,
-            "y": 8
-          },
-          "targets": [
-            {
-              "expr": "gpu_load_avg",
-              "legendFormat": "GPU负载"
-            },
-            {
-              "expr": "gpu_temp_avg",
-              "legendFormat": "GPU温度"
-            }
+          "name": "device",
+          "type": "query",
+          "datasource": "SystemMetricsAPI",
+          "query": "/api/system_metrics",
+          "jsonPath": "$.[*].device_name"
+        },
+        {
+          "name": "timeRange",
+          "type": "time",
+          "refresh": 2,
+          "options": [
+            {"text": "最近6小时", "value": "now-6h"},
+            {"text": "最近12小时", "value": "now-12h"},
+            {"text": "最近24小时", "value": "now-24h"}
           ]
         }
-      ],
-      "refresh": "1m",
-      "templating": {
-        "list": [
-          {
-            "name": "interval",
-            "type": "interval",
-            "query": "1m,5m,10m,30m,1h,6h,12h,1d",
-            "current": {
-              "selected": true,
-              "text": "5m",
-              "value": "5m"
-            }
-          }
-        ]
-      }
-    }
+      ]
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "1m"
   }
+}

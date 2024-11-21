@@ -113,7 +113,6 @@ def upload_to_d1(metrics):
         response = requests.post(url, headers=headers, json={"sql": main_sql, "params": main_params})
         response.raise_for_status()
     except Exception as e:
-        print(response.json())
         print(f"Failed to upload main metrics: {e}")
         
     # 插入GPU指标
@@ -140,10 +139,7 @@ def upload_to_d1(metrics):
                 response = requests.post(url, headers=headers, json={"sql": gpu_sql, "params": gpu_params})
                 response.raise_for_status()
             except Exception as e:
-                print(response.json())
-                response.raise_for_status()
                 print(f"Failed to upload GPU metrics: {e}")
-                response.raise_for_status()
     
 def collect_metrics():
     network_speeds = network_monitor.get_speed()
