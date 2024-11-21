@@ -15,6 +15,7 @@ def create_tables():
     CREATE TABLE IF NOT EXISTS system_metrics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp TEXT,
+        device_name TEXT,
         cpu_percent REAL,
         memory_total BIGINT,
         memory_used BIGINT,
@@ -34,24 +35,18 @@ def create_tables():
     create_gpu_metrics_table = """
     CREATE TABLE IF NOT EXISTS gpu_metrics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        metrics_id INTEGER,
+        timestamp TEXT,
+        device_name TEXT,
         gpu_index INTEGER,
         gpu_name TEXT,
         gpu_load REAL,
         gpu_memory_used REAL,
         gpu_memory_total REAL,
-        gpu_temperature REAL,
-        FOREIGN KEY (metrics_id) REFERENCES system_metrics(id)
+        gpu_temperature REAL
     );
     """
-
-    # 创建索引
-    create_indexes = """
-    CREATE INDEX IF NOT EXISTS idx_timestamp ON system_metrics(timestamp);
-    CREATE INDEX IF NOT EXISTS idx_metrics_id ON gpu_metrics(metrics_id);
-    """
-
-    queries = [create_metrics_table, create_gpu_metrics_table, create_indexes]
+    
+    queries = [create_metrics_table, create_gpu_metrics_table]
 
     for query in queries:
         try:
@@ -61,7 +56,7 @@ def create_tables():
             }
             response = requests.post(url, headers=headers, json=data)
             response.raise_for_status()
-            print(f"执行SQL成功: {query[:50]}...")
+            print(f"执行SQL成功: {query[:]}...")
         except Exception as e:
             print(f"执行SQL失败: {e}")
             sys.exit(1)

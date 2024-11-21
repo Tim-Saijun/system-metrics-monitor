@@ -4,7 +4,7 @@ import time
 import requests
 import json
 from datetime import datetime
-from config import CF_ACCOUNT_ID, CF_API_TOKEN, DATABASE_NAME
+from config import CF_ACCOUNT_ID, CF_API_TOKEN, DATABASE_NAME, DEVICE_NAME
 
 class NetworkSpeedMonitor:
     def __init__(self):
@@ -85,15 +85,16 @@ def upload_to_d1(metrics):
     # 插入主要系统指标
     main_sql = """
     INSERT INTO system_metrics (
-        timestamp, cpu_percent, memory_total, memory_used, memory_percent,
+        timestamp, device_name, cpu_percent, memory_total, memory_used, memory_percent,
         swap_total, swap_used, swap_percent, disk_total, disk_used,
         disk_percent, network_upload_speed, network_download_speed
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     RETURNING id;
     """
     
     main_params = [
         datetime.now().isoformat(),
+        DEVICE_NAME,
         metrics['cpu']['percent'],
         metrics['memory']['total'],
         metrics['memory']['used'],
@@ -109,40 +110,41 @@ def upload_to_d1(metrics):
     ]
     
     try:
-        # 插入主要指标并获取ID
         response = requests.post(url, headers=headers, json={"sql": main_sql, "params": main_params})
         response.raise_for_status()
-        metrics_id = response.json()['results'][0]['id']
-        
-        # 插入GPU指标
-        if metrics['gpus']:
-            gpu_sql = """
-            INSERT INTO gpu_metrics (
-                metrics_id, gpu_index, gpu_name, gpu_load,
-                gpu_memory_used, gpu_memory_total, gpu_temperature
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            """
-            
-            for gpu in metrics['gpus']:
-                gpu_params = [
-                    metrics_id,
-                    gpu['gpu_index'],
-                    gpu['gpu_name'],
-                    gpu['gpu_load'],
-                    gpu['gpu_memory_used'],
-                    gpu['gpu_memory_total'],
-                    gpu['gpu_temperature']
-                ]
-                try:
-                    response = requests.post(url, headers=headers, json={"sql": gpu_sql, "params": gpu_params})
-                    response.raise_for_status()
-                except Exception as e:
-                    print(f"Failed to upload GPU metrics: {e}")
-                response.raise_for_status()
-                
-        print("数据上传成功")
     except Exception as e:
-        print(f"数据上传失败: {e}")
+        print(response.json())
+        print(f"Failed to upload main metrics: {e}")
+        
+    # 插入GPU指标
+    if metrics['gpus']:
+        gpu_sql = """
+        INSERT INTO gpu_metrics (
+            timestamp, device_name, gpu_index, gpu_name, gpu_load,
+            gpu_memory_used, gpu_memory_total, gpu_temperature
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        
+        for gpu in metrics['gpus']:
+            gpu_params = [
+                datetime.now().isoformat(),
+                DEVICE_NAME,
+                gpu['gpu_index'],
+                gpu['gpu_name'],
+                gpu['gpu_load'],
+                gpu['gpu_memory_used'],
+                gpu['gpu_memory_total'],
+                gpu['gpu_temperature']
+            ]
+            try:
+                response = requests.post(url, headers=headers, json={"sql": gpu_sql, "params": gpu_params})
+                response.raise_for_status()
+            except Exception as e:
+                print(response.json())
+                response.raise_for_status()
+                print(f"Failed to upload GPU metrics: {e}")
+                response.raise_for_status()
+    
 def collect_metrics():
     network_speeds = network_monitor.get_speed()
     
@@ -174,8 +176,10 @@ if __name__ == "__main__":
         try:
             metrics = collect_metrics()
             upload_to_d1(metrics)
-            print(json.dumps(metrics, indent=2))
+            # print(json.dumps(metrics, indent=2))
+            print("数据上传成功" + datetime.now().isoformat())
             time.sleep(60)
         except Exception as e:
             print(f"发生错误: {e}")
             time.sleep(60)
+            
