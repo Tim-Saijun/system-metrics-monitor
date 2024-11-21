@@ -1,0 +1,6 @@
+# Rename this file to "config.py"
+# 重命名为"config.py" 才能生效
+# Cloudflare API配置
+CF_ACCOUNT_ID = ""
+CF_API_TOKEN = ""
+DATABASE_NAME = ""
