@@ -1,0 +1,102 @@
+{
+    "dashboard": {
+      "title": "系统监控仪表板",
+      "panels": [
+        {
+          "title": "CPU使用率",
+          "type": "graph",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "title": "内存使用情况",
+          "type": "graph",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "targets": [
+            {
+              "expr": "memory_avg",
+              "legendFormat": "内存使用率"
+            },
+            {
+              "expr": "swap_avg",
+              "legendFormat": "交换区使用率"
+            }
+          ]
+        },
+        {
+          "title": "网络速度",
+          "type": "graph",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "targets": [
+            {
+              "expr": "upload_speed_avg",
+              "legendFormat": "上传速度 (MB/s)"
+            },
+            {
+              "expr": "download_speed_avg",
+              "legendFormat": "下载速度 (MB/s)"
+            }
+          ]
+        },
+        {
+          "title": "磁盘使用率",
+          "type": "gauge",
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 12,
+            "y": 8
+          }
+        },
+        {
+          "title": "GPU状态",
+          "type": "stat",
+          "gridPos": {
+            "h": 8,
+            "w": 4,
+            "x": 20,
+            "y": 8
+          },
+          "targets": [
+            {
+              "expr": "gpu_load_avg",
+              "legendFormat": "GPU负载"
+            },
+            {
+              "expr": "gpu_temp_avg",
+              "legendFormat": "GPU温度"
+            }
+          ]
+        }
+      ],
+      "refresh": "1m",
+      "templating": {
+        "list": [
+          {
+            "name": "interval",
+            "type": "interval",
+            "query": "1m,5m,10m,30m,1h,6h,12h,1d",
+            "current": {
+              "selected": true,
+              "text": "5m",
+              "value": "5m"
+            }
+          }
+        ]
+      }
+    }
+  }

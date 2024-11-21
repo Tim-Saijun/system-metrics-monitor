@@ -1,0 +1,38 @@
+# CPU使用率告警
+- name: 高CPU使用率
+  conditions:
+    - when: avg() > 90
+      for: 5m
+  notifications:
+    - send_to: email
+
+# 内存使用率告警
+- name: 高内存使用率
+  conditions:
+    - when: avg() > 85
+      for: 5m
+  notifications:
+    - send_to: slack
+
+# GPU温度告警
+- name: GPU过热
+  conditions:
+    - when: avg() > 80
+      for: 1m
+  notifications:
+    - send_to: webhook
+
+# 交换区使用率告警
+- name: 高交换区使用率
+  conditions:
+    - when: avg(swap_percent) > 80
+      for: 5m
+  notifications:
+    - send_to: email
+# 网络带宽告警
+- name: 高网络带宽使用
+  conditions:
+    - when: avg(upload_speed_avg) > 100 || avg(download_speed_avg) > 100
+      for: 5m
+  notifications:
+    - send_to: slack
