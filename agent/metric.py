@@ -68,7 +68,8 @@ def get_gpu_metrics():
                 "gpu_temperature": gpu.temperature
             })
         return gpu_metrics
-    except:
+    except Exception as e:
+        print(f"Failed to get GPU metrics: {e}")
         return []
 
 
@@ -132,8 +133,11 @@ def upload_to_d1(metrics):
                     gpu['gpu_memory_total'],
                     gpu['gpu_temperature']
                 ]
-                
-                response = requests.post(url, headers=headers, json={"sql": gpu_sql, "params": gpu_params})
+                try:
+                    response = requests.post(url, headers=headers, json={"sql": gpu_sql, "params": gpu_params})
+                    response.raise_for_status()
+                except Exception as e:
+                    print(f"Failed to upload GPU metrics: {e}")
                 response.raise_for_status()
                 
         print("数据上传成功")
