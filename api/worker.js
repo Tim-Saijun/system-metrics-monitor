@@ -15,6 +15,15 @@ export default {
       return new Response(null, { headers: corsHeaders })
     }
 
+    // 添加x-api-key验证
+    const apiKey = request.headers.get('x-api-key')
+    if (!apiKey || apiKey !== env.API_TOKEN) {
+      return new Response('Unauthorized', {
+        status: 401,
+        headers: corsHeaders
+      })
+    }
+
     try {
       let result
       const params = Object.fromEntries(url.searchParams)
@@ -27,9 +36,9 @@ export default {
         })
       }
 
-      // 解析时间参数
-      const fromDate = new Date(parseInt(from)).toISOString()
-      const toDate = new Date(parseInt(to)).toISOString()
+      // 解析时间参数，添加8小时偏移
+      const fromDate = new Date(parseInt(from) + 8 * 60 * 60 * 1000).toISOString()
+      const toDate = new Date(parseInt(to) + 8 * 60 * 60 * 1000).toISOString()
 
       switch (path) {
         case '/api/system_metrics':
